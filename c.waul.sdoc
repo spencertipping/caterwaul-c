@@ -1,0 +1,37 @@
+Caterwaul C module | Spencer Tipping
+Licensed under the terms of the MIT source code license
+
+Introduction.
+This module implements a fairly straightforward low-level syntactic layer for C. This includes a parser, a tree representation, and a serializer. It does this by hijacking Caterwaul's
+Javascript parser to use C-specific syntax tables. As a result, it has some oddities that make it a poor choice for general-purpose C parsing. (It's really good for small stuff, however.)
+You'll need a full version of Caterwaul and the Hijack extension (github.com/spencertipping/caterwaul-hijack) loaded in order to use this.
+
+Note that this extension can be used to parse C++, but template syntax will come out wonky. (Should serialize/deserialize just fine though.) Also, this library is not designed to handle some
+of C's more arcane precedence rules and will make mistakes accordingly. In addition, it treats all preprocessor directives as comments and ignores them. Finally, it assumes that C's grammar
+supports regular expressions (which it doesn't, though I imagine it could) and parses the language accordingly. You probably shouldn't use this library at all, come to think of it.
+
+Update: This library is worthless for parsing most of C/C++. It's only useful if you want to write really low-level stuff that doesn't define and use custom types.
+
+caterwaul.module('c', 'js_all', function ($) {
+  ($.c(code) = $.c.parse(code)) / hijacked /-merge/ statics
+
+  -where [hijacked = {precedence: ['::', '++ -- () [] -> . typeid const_cast dynamic_cast reinterpret_cast static_cast', 'u++ u-- u+ u- u! u~ u* u& compl sizeof new delete not', '.* ->*',
+                                   '* / %', '+ -', '<< >>', '< <= > >=', '== !=', '& bitand', '^ xor', '| bitor', '&& and', '|| or', '? = += -= *= /= %= <<= >>= &= ^= |= and_eq or_eq xor_eq',
+                                   'throw', ',', 'char signed unsigned short int long float double',
+                                   'if else try catch finally for switch do while struct class union enum goto namespace using', 'u; ;'],
+
+                      binary:     ':: () [] -> . .* ->* * / % + - << >> < <= > >= == != & bitand ^ xor | bitor && and || or = += -= *= /= %= <<= >>= &= |= ^= and_eq or_eq xor_eq , : ;',
+                      right:      ':: u++ u-- u+ u- u! u~ u* u& compl sizeof new delete not ++ -- ? = += -= *= /= %= <<= >>= &= ^= |= and_eq or_eq xor_eq if else ' +
+                                  'try catch finally for switch case while do char signed unsigned short int long float double',
+
+                      prefix:     'u* u& u+ u- u! u~ u++ u-- not compl sizeof new typeof finally case delete typeid const_cast dynamic_cast reinterpret_cast static_cast throw'.qw +
+                                  'char signed unsigned short int long float double'.qw -seq,
+                      postfix:    '++ --'.qw,
+                      blocks:     'if 1 do 1 catch 1 try 1 for 1 while 1 switch 1 enum 1 struct 1 class 1 union 1 namespace 1'.qh} /!hijack,
+
+                               // The name 'syntax_node' must be used here due to the way parse() is written.
+          statics  = wcapture [syntax_node = syntax_subclass(ctor, javascript_tree_serialization_methods, javascript_tree_type_methods, {serialize: hijacked.serialize})
+                                     -where [ctor(data, xs = arguments) = this -se [data.constructor === this.constructor
+                                                                                    ? (this.data = data.data, this.length = 0)
+                                                                                    : (this.data = data,      this.length = 0, xs *![this.push(x) -when- xi] -seq)]],
+                               syntax      = syntax_node]] -using- caterwaul});
