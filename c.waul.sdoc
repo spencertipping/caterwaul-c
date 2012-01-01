@@ -25,7 +25,7 @@ caterwaul.module('c', 'js_all', function ($) {
                                   'try catch finally for switch case while do char signed unsigned short int long float double',
 
                       prefix:     'u* u& u+ u- u! u~ u++ u-- not compl sizeof new typeof finally case delete typeid const_cast dynamic_cast reinterpret_cast static_cast throw'.qw +
-                                  'char signed unsigned short int long float double'.qw -seq,
+                                  'char signed unsigned short int long float double goto'.qw -seq,
                       postfix:    '++ --'.qw,
                       blocks:     'if 1 do 1 catch 1 try 1 for 1 while 1 switch 1 enum 1 struct 1 class 1 union 1 namespace 1'.qh} /!hijack,
 
